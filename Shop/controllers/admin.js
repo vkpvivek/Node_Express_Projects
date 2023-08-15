@@ -15,9 +15,48 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  const product = new Product(title, imageUrl, description, price);
+  const product = new Product(null,title, imageUrl, description, price);
   product.save();
   res.redirect('/');
+};
+
+exports.getEditProduct = (req, res, next) => {
+  const editMode=req.query.edit;    //check value of edit in query (/...?value=12&edit=true)
+  if(!editMode){
+    return res.redirect('/');
+  }
+
+  const prodId=req.params.productId;
+  Product.findById(prodId,product=>{
+    if(!product){
+      return res.redirect('/');
+    }
+    res.render('admin/edit-product', {
+      pageTitle: 'Edit Product',
+      path: '/admin/edit-product',
+      editing:editMode,
+      product:product
+    });
+
+  });
+};
+
+exports.postEditProduct = (req,res,next)=>{
+  const prodId=req.body.productId;
+  const updatedTitle=req.body.title;
+  const updatedPrice=req.body.price;
+  const updatedImageUrl=req.body.imageUrl;
+  const updatedDesc=req.body.description;
+  const updatedProduct=new Product(
+    prodId,
+    updatedTitle,
+    updatedImageUrl,
+    updatedDesc,
+    updatedPrice
+  );
+  console.log("product id : " +prodId);
+  updatedProduct.update();
+  res.redirect('/admin/products');
 };
 
 exports.getProducts = (req, res, next) => {
@@ -28,4 +67,11 @@ exports.getProducts = (req, res, next) => {
       path: '/admin/products'
     });
   });
+};
+
+exports.postDeleteProduct =(req,res,next)=>{
+    const prodId=req.body.productId;
+    console.log(prodId);
+    Product.deleteById(prodId);
+    res.redirect('/admin/products');
 };
